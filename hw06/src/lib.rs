@@ -3,6 +3,7 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
+
 extern crate hyper;
 
 use std::io::Read;
@@ -49,6 +50,15 @@ impl UserClient {
     }
 
     // TODO: Implement send_msg
+    pub fn send_msg(&self, text: &str) -> hyper::Result<()> {
+        let msg = Message::new(self.username.clone(), text.into());
+
+        let buf = serde_json::to_string(&msg).unwrap();
+        let mut res = self.client.post(&self.server_addr)
+            .body(&buf)
+            .send()?;
+        Ok(())
+    }
 
     pub fn get_content(&self) -> hyper::Result<(StatusCode, String)> {
         let mut response = try!(self.client.get(&self.server_addr).send());

@@ -3,6 +3,10 @@ extern crate hyper;
 extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
+
+extern crate chrono;
+use chrono::prelude::*;
+
 extern crate bbs;
 
 use std::fs::{File, OpenOptions};
@@ -35,7 +39,6 @@ fn req_handler(mut req: Request, mut res: Response) {
             // Use `try_or_server_err!(expression, res)` instead of `try!(expression)` in
             // order to return an internal server error.
             let mut buf = String::new();
-            // TODO
             let mut file = try_or_server_err!(File::open(HTML_HEADER), res);
             try_or_server_err!(file.read_to_string(&mut buf), res);
 
@@ -56,10 +59,28 @@ fn req_handler(mut req: Request, mut res: Response) {
 
             let message : Message = try_or_server_err!(serde_json::from_str(&buf), res);
 
-            println!("{:?}", message);
+           println!("{:?}", message);
 
-            // Read the message out of the `req` into a buffer, handle it, and respond with Ok.
-            // TODO
+            let mut file = try_or_server_err!(OpenOptions::new()
+                        .write(true)
+                        .create(true)
+                        .append(true)
+                        .open(HTML_DATA), res);
+            let dt: DateTime<Local> = Local::now();
+                        
+            try_or_server_err!(file.write_all(
+                format!("<div class='user'>user {} {}</div><div class='content'> {} </div>", 
+                    message.user,
+                    dt.format("%Y-%m-%d %H:%M:%S").to_string(),
+                    message.text).as_bytes()
+                ), res);
+            
+            if message.user != "bot" {
+               let mut tcp = TcpStream::connect(BOT_ADDR).unwrap();
+               tcp.write_all(message.text.as_bytes()).unwrap(); 
+            }
+
+            *res.status_mut() = StatusCode::Ok;
         },
         _ => *res.status_mut() = StatusCode::ImATeapot,
     }

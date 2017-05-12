@@ -7,4 +7,5 @@ hyper = "0.10.9"
 serde = "*"
 serde_json = "*"
 serde_derive = "*"
+chrono = { version = "0.3", features = ["serde"] }
 
