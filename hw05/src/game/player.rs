@@ -60,12 +60,22 @@ impl Player {
 
     /// Execute the given command on the player and board state.
     pub fn act(&mut self, cmd: Command) -> Result<(), ()> {
-        unimplemented!();
+        match cmd {
+            Command::Go(room) => {
+                println!("{:?}", self.location.borrow().neighbors_string());
+                let room = self.find_room(room)?;
+                self.location = room;
+                Ok(())
+            },
+            Command::Shoot(room) => {
+                Ok(())
+            }
+        }
     }
 
     /// Find one of the neighbors of the current room based on its name. Case insensitive.
     fn find_room(&self, room: String) -> Result<Rc<RefCell<Room>>, ()> {
-        unimplemented!()
+        self.location.borrow().neighbor(room)
     }
 }
 

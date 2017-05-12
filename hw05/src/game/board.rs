@@ -56,8 +56,13 @@ impl Board {
                 }
             };
 
-            // Add the new room to self.rooms
-            unimplemented!();
+            self.rooms.push(Rc::new(RefCell::new(Room {
+                name: name.into(),
+                contents: curios,
+                halls: vec![],
+                wumpus: wumpus,
+            })));
+
         }
         Ok(())
     }
@@ -74,11 +79,16 @@ impl Board {
             if h.len() > 2 { return Err("Invalid number of rooms per hall".to_string()); }
             let mut hall = Hall::new();
 
-            // Add room links to halls
-            unimplemented!();
+            let h0 = h[0].as_u64().unwrap() as usize;
+            let h1 = h[1].as_u64().unwrap() as usize;
 
-            // Add hall links to rooms
-            unimplemented!();
+            hall.left = self.rooms[h0].clone();
+            hall.right = self.rooms[h1].clone();
+ 
+            let rc = Rc::new(hall);
+            self.rooms[h0].borrow_mut().halls.push(rc.clone());
+            self.rooms[h1].borrow_mut().halls.push(rc.clone());
+
         }
         Ok(())
     }

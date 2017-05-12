@@ -22,9 +22,26 @@ impl Eq for Room {}
 
 impl Room {
     // TODO: Implement the necessary methods for Rooms.
+    //
+    pub fn neighbor(&self, name: String) -> Result<Rc<RefCell<Room>>, ()> {
+        for hall in &self.halls {
+            let room = hall.other(&self);
+            if room.borrow().name.to_lowercase() == name.to_lowercase() {
+                return Ok(room.clone())
+            }
+        }
+
+        Err(())
+    }
 
     pub fn neighbors_string(&self) -> String {
-        // TODO: Implement
-        unimplemented!();
+        let mut res = String::new();
+        for hall in &self.halls {
+            let room = hall.other(&self);
+            res += " ";
+            res += &room.borrow().name;
+        }
+
+        res
     }
 }
