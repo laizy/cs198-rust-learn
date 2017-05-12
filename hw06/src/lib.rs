@@ -1,9 +1,11 @@
-extern crate rustc_serialize;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
+
 extern crate hyper;
 
 use std::io::Read;
-use rustc_serialize::json;
-use rustc_serialize::{Encodable, Encoder};
 
 use hyper::status::StatusCode;
 
@@ -16,7 +18,7 @@ pub const HTML_HEADER: &'static str = "html/header.html";
 pub const HTML_FOOTER: &'static str = "html/footer.html";
 
 
-#[derive(Debug, RustcDecodable, RustcEncodable)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Message {
     pub user: String,
     pub text: String,

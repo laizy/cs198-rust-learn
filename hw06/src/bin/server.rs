@@ -1,5 +1,8 @@
 extern crate hyper;
-extern crate rustc_serialize;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
 extern crate bbs;
 
 use std::fs::{File, OpenOptions};
@@ -8,7 +11,7 @@ use std::net::TcpStream;
 
 use hyper::server::{Request, Response, Server};
 use hyper::status::StatusCode;
-use rustc_serialize::json;
+
 use bbs::Message;
 use bbs::{SERVER_ADDR, BOT_ADDR, HTML_DATA, HTML_HEADER, HTML_FOOTER};
 
@@ -33,12 +36,28 @@ fn req_handler(mut req: Request, mut res: Response) {
             // order to return an internal server error.
             let mut buf = String::new();
             // TODO
+            let mut file = try_or_server_err!(File::open(HTML_HEADER), res);
+            try_or_server_err!(file.read_to_string(&mut buf), res);
+
+            File::open(HTML_DATA).as_mut().map(|file| {
+                file.read_to_string(&mut buf);
+            });
+
+            let mut file = try_or_server_err!(File::open(HTML_FOOTER), res);
+            try_or_server_err!(file.read_to_string(&mut buf), res);
 
             // And return buf as the response.
             *res.status_mut() = StatusCode::Ok;
             res.send(&buf.as_bytes()).unwrap();
         },
         hyper::Post => {
+            let mut buf = String::new();
+            try_or_server_err!(req.read_to_string(&mut buf), res);
+
+            let message : Message = try_or_server_err!(serde_json::from_str(&buf), res);
+
+            println!("{:?}", message);
+
             // Read the message out of the `req` into a buffer, handle it, and respond with Ok.
             // TODO
         },
